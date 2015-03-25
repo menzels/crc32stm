@@ -73,21 +73,32 @@ void Crc32::addData(const void* data, size_t length)
            lookup_[0][(one)     & 0xFF];
   }
 
-  uint32_t lastWord = 0x0;
-  switch(bytes) {
-    case 1:
-      lastWord |= *d & 0xFF;
-    case 2:
-      lastWord |= *d & 0xFFFF;
-    case 3:
-      lastWord |= *d & 0xFFFFFF;
-    }
+  if(bytes)
+  {
+    uint32_t lastWord = 0x0;
+    switch(bytes) {
+      case 1:
+        lastWord |= *d & 0xFF;
+        break;
+      case 2:
+        lastWord |= *d & 0xFFFF;
+        break;
+      case 3:
+        lastWord |= *d & 0xFFFFFF;
+        break;
+      }
 
-  uint32_t one = lastWord ^ crc_;
-  crc_ = lookup_[3][(one>>24) & 0xFF] ^
-         lookup_[2][(one>>16) & 0xFF] ^
-         lookup_[1][(one>> 8) & 0xFF] ^
-         lookup_[0][(one)     & 0xFF];
+    uint32_t one = lastWord ^ crc_;
+    crc_ = lookup_[3][(one>>24) & 0xFF] ^
+           lookup_[2][(one>>16) & 0xFF] ^
+           lookup_[1][(one>> 8) & 0xFF] ^
+           lookup_[0][(one)     & 0xFF];
+  }
+}
+
+void Crc32::reset()
+{
+  crc_ = cfg_.init;
 }
 
 void Crc32::generateLookup()
