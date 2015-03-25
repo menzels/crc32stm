@@ -19,10 +19,12 @@ public:
 
     uint32_t getHash(){return crc_;}
 
-    void reset(){crc_ = cfg_.init;}
+    void reset();
 
 private:
     uint32_t crc_;
+    uint32_t unaligned_;
+    uint32_t byteCount_;
     uint32_t lookup_[16][256];
     Config cfg_;
 
