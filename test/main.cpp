@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
 
   char endl = '\n';
 
-  size_t numbytes = 100020;
+  size_t numbytes = 100019;
   uint32_t data[100024];
 
   for(size_t i = 0; i < 100024; i++)

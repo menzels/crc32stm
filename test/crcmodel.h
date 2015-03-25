@@ -153,6 +153,7 @@ ulong cm_tab(p_cm_t p_cm,int index);
 
 /* Function to calculate CRC Blocks as from STM32 µC's Hardware CRC */
 unsigned int CRC_CalcBlockCRC(ulword *buffer, ulword bytes);
+inline void wordCrc(p_cm_t crc_model, ulword word_to_do);
 
 /* End of the header file idempotence #ifndef */
 #endif

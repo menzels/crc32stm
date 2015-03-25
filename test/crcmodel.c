@@ -134,12 +134,11 @@ ulong cm_tab(p_cm_t p_cm, int    index)
 /*                             End of crcmodel.c                              */
 /******************************************************************************/
 
+
 unsigned int CRC_CalcBlockCRC(ulword *buffer, ulword bytes)
 {
 cm_t        crc_model;
 ulword      word_to_do;
-ubyte       byte_to_do;
-unsigned int         i;
 
     // Values for the STM32F generator.
 
@@ -152,41 +151,62 @@ unsigned int         i;
 
     cm_ini(&crc_model);
 
-    ulword words = bytes / 4;
+    if(bytes == 0)
+        return 0;
 
-    while (words--)
+    int words  = (bytes + 3) / 4;
+
+    while (--words)
     {
         // The STM32F10x hardware does 32-bit words at a time!!!
 
-        word_to_do = *buffer++;
-
-        // Do all bytes in the 32-bit word.
-
-        for (i = 0; i < sizeof(word_to_do); i++)
-        {
-            // We calculate a *byte* at a time. If the CRC is MSB first we
-            // do the next MS byte and vica-versa.
-
-            if (crc_model.cm_refin == FALSE)
-            {
-                // MSB first. Do the next MS byte.
-
-                byte_to_do = (ubyte) ((word_to_do & 0xFF000000) >> 24);
-                word_to_do <<= 8;
-            }
-            else
-            {
-                // LSB first. Do the next LS byte.
-
-                byte_to_do = (ubyte) (word_to_do & 0x000000FF);
-                word_to_do >>= 8;
-            }
-
-            cm_nxt(&crc_model, byte_to_do);
-        }
+        wordCrc(&crc_model, *buffer++);
     }
 
-    // Return the final result.
+    word_to_do = *buffer++;
+    switch(bytes % 4)
+    {
+    case 1:
+        word_to_do &= 0x000000FF;
+        break;
+    case 2:
+        word_to_do &= 0x0000FFFF;
+        break;
+    case 3:
+        word_to_do &= 0x00FFFFFF;
+        break;
+    }
+    wordCrc(&crc_model, word_to_do);
 
+    // Return the final result.
     return (cm_crc(&crc_model));
+}
+
+void wordCrc(p_cm_t crc_model, ulword word_to_do)
+{
+    ubyte       byte_to_do;
+    // Do all bytes in the 32-bit word.
+
+    for (unsigned int i = 0; i < sizeof(word_to_do); i++)
+    {
+        // We calculate a *byte* at a time. If the CRC is MSB first we
+        // do the next MS byte and vica-versa.
+
+        if (crc_model->cm_refin == FALSE)
+        {
+            // MSB first. Do the next MS byte.
+
+            byte_to_do = (ubyte) ((word_to_do & 0xFF000000) >> 24);
+            word_to_do <<= 8;
+        }
+        else
+        {
+            // LSB first. Do the next LS byte.
+
+            byte_to_do = (ubyte) (word_to_do & 0x000000FF);
+            word_to_do >>= 8;
+        }
+
+        cm_nxt(crc_model, byte_to_do);
+    }
 }
